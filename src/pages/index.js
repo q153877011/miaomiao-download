@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import Head from 'next/head'; // 用于设置页面标题等
 
-export async function getServerSideProps(context) {
+export async function getStaticProps(context) {
     // 构建到 public/zip 目录的绝对路径
     // process.cwd() 获取当前工作目录，在 Next.js 中通常是项目根目录
     const zipDirectoryPath = path.join(process.cwd(), 'public', 'zip');
