@@ -3,34 +3,36 @@ import path from 'path';
 import Head from 'next/head'; // 用于设置页面标题等
 import React from 'react';
 import { Popup, Button } from 'tdesign-react/lib/';
+import styles from '../styles/index.module.css'
 
 export async function getStaticProps(context) {
-    // 构建到 public/zip 目录的绝对路径
-    // process.cwd() 获取当前工作目录，在 Next.js 中通常是项目根目录
-    const zipDirectoryPath = path.join(process.cwd(), 'public', 'zip');
+    const zipDirectoryPath = path.join(process.cwd(), 'public', 'file');
 
     let files = [];
     let error = null;
 
     try {
-        // 读取目录内容
-        // fs.readdirSync 是同步读取，适合在 getServerSideProps 中使用
         const fileNames = fs.readdirSync(zipDirectoryPath);
+        console.log(fileNames);
+        fileNames.forEach((fileName) => {
+            const temp = {
+                name: fileName,
+                img: '',
+                file: ''
+            }
+            console.log(path.join(process.cwd(), 'public', 'file', fileName))
+            const now_files = fs.readdirSync(path.join(process.cwd(), 'public', 'file', fileName));
 
-        // 可选：过滤只保留 .zip 文件，如果你的目录里有其他文件的话
-        files = fileNames.filter(name => name.endsWith('.zip'));
-
-        // 如果需要排除隐藏文件或特定文件，可以在这里添加更多过滤逻辑
-        // files = files.filter(name => !name.startsWith('.'));
-
+            temp.file = now_files.filter(file => file.endsWith('.zip'))[0];
+            temp.img = now_files.filter(file => file.endsWith('.png'))[0];
+            files.push({...temp});
+        })
     } catch (e) {
-        // 如果目录不存在或读取失败，捕获错误
         console.error("Error reading /public/zip directory:", e);
         error = "无法读取文件列表，请检查服务器配置。"; // 提供一个用户友好的错误信息
-        files = []; // 确保在出错时文件列表为空
+        files = []; 
     }
 
-    // 将文件列表和可能的错误作为 props 传递给页面组件
     return {
         props: {
             files,
@@ -101,40 +103,58 @@ export default function Home({ files, error }) {
                   text-align: center;
                   margin-top: 20px;
             }
+            .PopupContent {
+                background-color: black;
+            }
         `}</style>
 
         <main>
-            {/* 显示错误信息（如果存在） */}
-            {error && <p className="error-message">{error}</p>}
+            {
+                visible ?
+                    <div className={styles.popupContent}>
+                        <div className={styles.button}>
+                            <a href="https://edgeone.ai/pages/drop?from=miaomiao" target="_blank">
+                                <Button shape="round" style={{padding: 20}}>
+                                    🚀 立即体验
+                                </Button>
+                            </a>
+                        </div>
+                        <div className={styles.desc}>
+                            EdgeOne Pages Drop 免费的文件托管和文件部署服务。
+                        </div>
+                    </div>
+                :
+                    <div></div>
 
-            {/* 如果没有错误且文件列表为空 */}
+            }
+            
             {!error && files.length === 0 && (
                 <p className="no-files">暂无文件可供下载。</p>
             )}
 
             {/* 如果没有错误且文件列表不为空，则渲染表格 */}
-            <Popup visible={visible}>欢迎使用 EdgeOne Drop。</Popup>
             {!error && files.length > 0 && (
                 <table>
                     <thead>
                         <tr>
+                            <th>预览图</th>
                             <th>模型名称</th>
                             <th>操作</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {/* 遍历文件列表，为每个文件创建一行 */}
-                        {files.map((fileName) => (
-                            <tr key={fileName}> {/* 使用文件名作为 key */}
+                        {files.map((fileObj) => (
+                            <tr key={fileObj.name}> {/* 使用文件名作为 key */}
                                 <td>
-                                    {/* 文件名链接，点击下载 */}
-                                    <a href={`/zip/${encodeURIComponent(fileName)}`} download={fileName} onClick={() => setVisible(true)}>
-                                        {fileName}
+                                   <img src={`/file/${encodeURIComponent(fileObj.name)}/${encodeURIComponent(fileObj.img)}`} className={styles.preImg}></img>
+                                </td>
+                                <td>
+                                    <a href={`/file/${encodeURIComponent(fileObj.name)}/${encodeURIComponent(fileObj.file)}`} download={fileObj.file} onClick={() => setVisible(true)}>
+                                        {fileObj.name}
                                     </a>
                                 </td>
                                 <td>
-                                    {/* 下载按钮链接，点击下载 */}
-                                    <a href={`/zip/${encodeURIComponent(fileName)}`} download={fileName} className="download-button" onClick={() => setVisible(true)}>
+                                    <a href={`/file/${encodeURIComponent(fileObj.name)}/${encodeURIComponent(fileObj.file)}`} download={fileObj.file} className="download-button" onClick={() => setVisible(true)}>
                                         下载
                                     </a>
                                 </td>
