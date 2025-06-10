@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import Head from 'next/head'; // 用于设置页面标题等
+import React from 'react';
+import { Popup, Button } from 'tdesign-react/lib/';
 
 export async function getStaticProps(context) {
     // 构建到 public/zip 目录的绝对路径
@@ -38,6 +40,8 @@ export async function getStaticProps(context) {
 }
 
 export default function Home({ files, error }) {
+  const [visible, setVisible] = React.useState(false);
+  
   return (
     <div>
         <Head>
@@ -109,6 +113,7 @@ export default function Home({ files, error }) {
             )}
 
             {/* 如果没有错误且文件列表不为空，则渲染表格 */}
+            <Popup visible={visible}>欢迎使用 EdgeOne Drop。</Popup>
             {!error && files.length > 0 && (
                 <table>
                     <thead>
@@ -123,13 +128,13 @@ export default function Home({ files, error }) {
                             <tr key={fileName}> {/* 使用文件名作为 key */}
                                 <td>
                                     {/* 文件名链接，点击下载 */}
-                                    <a href={`/zip/${encodeURIComponent(fileName)}`} download={fileName}>
+                                    <a href={`/zip/${encodeURIComponent(fileName)}`} download={fileName} onClick={() => setVisible(true)}>
                                         {fileName}
                                     </a>
                                 </td>
                                 <td>
                                     {/* 下载按钮链接，点击下载 */}
-                                    <a href={`/zip/${encodeURIComponent(fileName)}`} download={fileName} className="download-button">
+                                    <a href={`/zip/${encodeURIComponent(fileName)}`} download={fileName} className="download-button" onClick={() => setVisible(true)}>
                                         下载
                                     </a>
                                 </td>
